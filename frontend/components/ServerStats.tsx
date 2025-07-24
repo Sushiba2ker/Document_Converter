@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Activity, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { getServerStats, ServerStats } from '@/lib/api';
+import { getServerStats, type ServerStats } from '@/lib/api';
 
 export default function ServerStats() {
   const [stats, setStats] = useState<ServerStats | null>(null);
