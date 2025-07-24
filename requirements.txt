@@ -1,0 +1,26 @@
+# Core web framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+
+# Document processing
+docling
+
+# File handling and utilities
+python-multipart
+aiofiles
+
+# Additional dependencies for better functionality
+jinja2
+python-magic
+
+# Optional: For better error handling and logging
+loguru
+
+# For image processing (if needed)
+Pillow>=9.0.0
+
+# For async operations
+httpx
+
+# SSL certificate handling
+certifi
