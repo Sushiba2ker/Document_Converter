@@ -7,24 +7,34 @@ import { getServerStats, type ServerStats } from '@/lib/api';
 export default function ServerStats() {
   const [stats, setStats] = useState<ServerStats | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [hasBackend, setHasBackend] = useState(false);
+
+  // Don't show server stats in production unless explicitly enabled
+  const showStats = process.env.NODE_ENV === 'development' ||
+                   process.env.NEXT_PUBLIC_SHOW_SERVER_STATS === 'true';
 
   useEffect(() => {
+    if (!showStats) return;
     const fetchStats = async () => {
       try {
         const serverStats = await getServerStats();
         setStats(serverStats);
+        setHasBackend(true);
       } catch (error) {
-        console.error('Failed to fetch server stats:', error);
+        // Silently fail if backend is not available
+        setHasBackend(false);
+        setStats(null);
       }
     };
 
     fetchStats();
-    const interval = setInterval(fetchStats, 5000); // Update every 5 seconds
+    const interval = setInterval(fetchStats, 10000); // Check every 10 seconds
 
     return () => clearInterval(interval);
   }, []);
 
-  if (!stats) return null;
+  // Don't render if disabled or no backend connection
+  if (!showStats || !hasBackend || !stats) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
