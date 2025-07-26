@@ -133,6 +133,20 @@ The frontend will be available at `http://localhost:3000`
    ./deploy-docker-ec2.sh YOUR_EC2_IP ~/.ssh/your-key.pem
    ```
 
+4. **Option C: Manual deployment on EC2 (you SSH into EC2 yourself):**
+
+   ```bash
+   # Upload project to EC2
+   scp -i ~/.ssh/your-key.pem -r . ubuntu@YOUR_EC2_IP:~/document-converter/
+
+   # SSH into EC2
+   ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP
+
+   # Navigate to project and deploy
+   cd ~/document-converter
+   ./deploy-local.sh
+   ```
+
 #### Manual Docker Deployment
 
 1. **Build and run locally:**
@@ -201,7 +215,8 @@ For production with custom domain:
 
 - **`install-docker.sh`** - Installs Docker and Docker Compose on Ubuntu
 - **`setup-ec2-docker.sh`** - Prepares EC2 instance with Docker and security configuration
-- **`deploy-docker-ec2.sh`** - Complete deployment script (includes Docker installation)
+- **`deploy-docker-ec2.sh`** - Complete remote deployment script (includes Docker installation)
+- **`deploy-local.sh`** - Local deployment script (run directly on EC2 after uploading project)
 
 ### Common Commands
 

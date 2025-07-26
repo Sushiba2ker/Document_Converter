@@ -9,6 +9,7 @@ Deploy everything to EC2 Ubuntu in one command:
 ```
 
 **What this does:**
+
 - ✅ Installs Docker and Docker Compose
 - ✅ Configures firewall and security
 - ✅ Uploads and builds your application
@@ -18,12 +19,14 @@ Deploy everything to EC2 Ubuntu in one command:
 ## 📋 Prerequisites
 
 ### EC2 Instance Requirements
+
 - **OS**: Ubuntu 20.04 LTS or 22.04 LTS
 - **Instance Type**: Minimum t3.medium (2 vCPU, 4GB RAM)
 - **Storage**: Minimum 20GB
 - **Security Group**: Open ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
 
 ### Local Requirements
+
 - SSH key for EC2 access
 - Git (project should be cloned locally)
 
@@ -46,7 +49,21 @@ Deploy everything to EC2 Ubuntu in one command:
 ./install-docker.sh
 ```
 
-### Method 3: Local Development
+### Method 3: Manual Deployment on EC2
+
+```bash
+# Upload project to EC2
+scp -i ~/.ssh/your-key.pem -r . ubuntu@YOUR_EC2_IP:~/document-converter/
+
+# SSH into EC2
+ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP
+
+# Navigate to project and deploy
+cd ~/document-converter
+./deploy-local.sh
+```
+
+### Method 4: Local Development
 
 ```bash
 # Build and run locally
@@ -65,27 +82,32 @@ After successful deployment:
 ## 🔧 Management Commands
 
 ### View Status
+
 ```bash
 ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP 'cd ~/document-converter && sudo docker-compose ps'
 ```
 
 ### View Logs
+
 ```bash
 ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP 'cd ~/document-converter && sudo docker-compose logs -f'
 ```
 
 ### Restart Services
+
 ```bash
 ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP 'cd ~/document-converter && sudo docker-compose restart'
 ```
 
 ### Update Application
+
 ```bash
 # Re-run the deployment script
 ./deploy-docker-ec2.sh YOUR_EC2_IP ~/.ssh/your-key.pem
 ```
 
 ### Stop Services
+
 ```bash
 ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP 'cd ~/document-converter && sudo docker-compose down'
 ```
@@ -93,6 +115,7 @@ ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP 'cd ~/document-converter && sudo d
 ## 🆘 Troubleshooting
 
 ### Quick Diagnostics
+
 ```bash
 # Check if services are running
 ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP 'sudo docker-compose ps'
@@ -107,11 +130,13 @@ ssh -i ~/.ssh/your-key.pem ubuntu@YOUR_EC2_IP 'sudo docker stats --no-stream'
 ### Common Issues
 
 1. **Cannot connect to EC2**
+
    - Check security group allows SSH (port 22)
    - Verify SSH key path and permissions
    - Ensure EC2 instance is running
 
 2. **Application not accessible**
+
    - Check security group allows HTTP (port 80)
    - Verify containers are running: `docker-compose ps`
    - Check logs: `docker-compose logs`
