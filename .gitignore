@@ -99,8 +99,12 @@ sample_*.*
 yarn.lock
 pnpm-lock.yaml
 
-# Vercel
-.vercel
+# Docker
+.docker
+docker-compose.override.yml
+
+# SSL certificates
+ssl/
 
 # TypeScript
 *.tsbuildinfo

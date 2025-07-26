@@ -14,6 +14,7 @@ A modern, minimalist document conversion application built with Next.js 15 and F
 ## Supported Formats
 
 ### Input Formats
+
 - PDF Documents
 - Microsoft Word (DOCX)
 - PowerPoint (PPTX)
@@ -25,6 +26,7 @@ A modern, minimalist document conversion application built with Next.js 15 and F
 - XML Files
 
 ### Output Formats
+
 - Markdown (.md)
 - HTML (.html)
 - JSON (.json)
@@ -34,12 +36,14 @@ A modern, minimalist document conversion application built with Next.js 15 and F
 ## Tech Stack
 
 ### Frontend
+
 - **Next.js 15** with App Router
 - **TypeScript** for type safety
 - **Tailwind CSS** for styling
 - **Lucide React** for icons
 
 ### Backend
+
 - **FastAPI** for API server
 - **Docling** for document processing
 - **Python 3.13+**
@@ -48,6 +52,7 @@ A modern, minimalist document conversion application built with Next.js 15 and F
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - Python 3.13+
 - pip or conda
@@ -55,11 +60,13 @@ A modern, minimalist document conversion application built with Next.js 15 and F
 ### Backend Setup
 
 1. Install Python dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 2. Start the FastAPI server:
+
 ```bash
 python run.py
 ```
@@ -69,16 +76,19 @@ The API will be available at `http://localhost:8000`
 ### Frontend Setup
 
 1. Navigate to frontend directory:
+
 ```bash
 cd frontend
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -97,37 +107,121 @@ The frontend will be available at `http://localhost:3000`
 
 ## Deployment
 
-### Vercel (Frontend)
+### Docker Deployment on EC2 Ubuntu
 
-1. Connect your GitHub repository to Vercel
-2. Set build command: `cd frontend && npm run build`
-3. Set output directory: `frontend/.next`
-4. Deploy
+#### Quick Deploy (Recommended)
 
-### Backend Deployment
+1. **Prepare your EC2 instance:**
 
-The FastAPI backend can be deployed to:
-- Railway
-- Render
-- Heroku
-- DigitalOcean App Platform
-- AWS/GCP/Azure
+   - Ubuntu 20.04 LTS or 22.04 LTS
+   - Minimum t3.medium (2 vCPU, 4GB RAM)
+   - Security Group: Open ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
+
+2. **Deploy with one command:**
+   ```bash
+   ./deploy-docker-ec2.sh YOUR_EC2_IP ~/.ssh/your-key.pem
+   ```
+
+#### Manual Docker Deployment
+
+1. **Build and run locally:**
+
+   ```bash
+   docker-compose up -d --build
+   ```
+
+2. **Access the application:**
+   - Frontend: `http://localhost`
+   - Backend API: `http://localhost:8000`
+   - API Documentation: `http://localhost:8000/docs`
+
+#### Production URLs (after EC2 deployment)
+
+- Frontend: `http://YOUR_EC2_IP`
+- Backend API: `http://YOUR_EC2_IP:8000`
+- API Documentation: `http://YOUR_EC2_IP:8000/docs`
 
 ## Configuration
 
 ### Environment Variables
 
-Backend:
-- `HOST` - Server host (default: 0.0.0.0)
-- `PORT` - Server port (default: 8000)
-- `RELOAD` - Auto-reload (default: true)
+Create a `.env` file for custom configuration:
 
-Frontend:
-- `NEXT_PUBLIC_API_URL` - Backend API URL
+```env
+# Production settings
+ENVIRONMENT=production
+HOST=0.0.0.0
+PORT=8000
+RELOAD=false
+```
+
+### Docker Configuration
+
+The application uses Docker Compose with:
+
+- **Application Container**: Runs both frontend (Next.js) and backend (FastAPI)
+- **Nginx Container**: Reverse proxy and load balancer
+- **Persistent Storage**: Upload files are stored in Docker volumes
+
+### SSL/HTTPS Setup (Optional)
+
+For production with custom domain:
+
+1. Obtain SSL certificates (Let's Encrypt recommended)
+2. Place certificates in `./ssl/` directory
+3. Uncomment HTTPS server block in `nginx.conf`
+4. Update domain name in nginx configuration
+
+## Docker Management
+
+### Common Commands
+
+```bash
+# Build and start services
+docker-compose up -d --build
+
+# View running containers
+docker-compose ps
+
+# View logs
+docker-compose logs -f
+
+# View logs for specific service
+docker-compose logs -f document-converter
+docker-compose logs -f nginx
+
+# Restart services
+docker-compose restart
+
+# Stop services
+docker-compose down
+
+# Update application
+git pull
+docker-compose down
+docker-compose up -d --build
+
+# Clean up unused Docker resources
+docker system prune -f
+```
+
+### Monitoring
+
+```bash
+# View resource usage
+docker stats
+
+# Check disk usage
+docker system df
+
+# View container health
+docker-compose ps
+```
 
 ## Development
 
 ### Project Structure
+
 ```
 ├── app/                    # FastAPI backend
 │   ├── main.py            # Main application
