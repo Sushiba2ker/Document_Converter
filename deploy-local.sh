@@ -64,6 +64,20 @@ check_project_directory() {
     print_success "Project files found"
 }
 
+# Check if running as root
+check_user() {
+    if [[ $EUID -eq 0 ]]; then
+        print_warning "Running as root user"
+        IS_ROOT=true
+        DOCKER_CMD="docker"
+        COMPOSE_CMD="docker-compose"
+    else
+        IS_ROOT=false
+        DOCKER_CMD="sudo docker"
+        COMPOSE_CMD="sudo docker-compose"
+    fi
+}
+
 # Install Docker if not present
 install_docker() {
     if command -v docker &> /dev/null && command -v docker-compose &> /dev/null; then
@@ -110,8 +124,10 @@ install_docker() {
         sudo curl -L "https://github.com/docker/compose/releases/download/$COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
         
-        # Add user to docker group
-        sudo usermod -aG docker $USER
+        # Add user to docker group (skip if root)
+        if [[ "$IS_ROOT" == "false" ]]; then
+            sudo usermod -aG docker $USER
+        fi
         
         # Start Docker service
         sudo systemctl enable docker
@@ -172,10 +188,10 @@ stop_existing_containers() {
     print_step "Stopping existing containers"
     
     # Stop and remove existing containers
-    sudo docker-compose down 2>/dev/null || true
-    
+    $COMPOSE_CMD down 2>/dev/null || true
+
     # Remove old images to free space
-    sudo docker system prune -f
+    $DOCKER_CMD system prune -f
     
     print_success "Existing containers stopped"
 }
@@ -186,18 +202,18 @@ build_and_deploy() {
     
     # Build and start containers
     print_info "Building Docker images..."
-    sudo docker-compose build --no-cache
-    
+    $COMPOSE_CMD build --no-cache
+
     print_info "Starting services..."
-    sudo docker-compose up -d
-    
+    $COMPOSE_CMD up -d
+
     # Wait for services to start
     print_info "Waiting for services to start..."
     sleep 30
-    
+
     # Check if services are running
     print_info "Checking service status..."
-    sudo docker-compose ps
+    $COMPOSE_CMD ps
     
     print_success "Application deployed"
 }
@@ -214,15 +230,15 @@ verify_deployment() {
         print_success "Backend API is responding"
     else
         print_warning "Backend API might not be ready yet"
-        print_info "You can check logs with: sudo docker-compose logs document-converter"
+        print_info "You can check logs with: $COMPOSE_CMD logs document-converter"
     fi
-    
+
     # Check frontend
     if curl -f -s "http://localhost:3000" > /dev/null; then
         print_success "Frontend is responding"
     else
         print_warning "Frontend might not be ready yet"
-        print_info "You can check logs with: sudo docker-compose logs document-converter"
+        print_info "You can check logs with: $COMPOSE_CMD logs document-converter"
     fi
     
     # Check nginx proxy
@@ -230,7 +246,7 @@ verify_deployment() {
         print_success "Nginx proxy is responding"
     else
         print_warning "Nginx proxy might not be ready yet"
-        print_info "You can check logs with: sudo docker-compose logs nginx"
+        print_info "You can check logs with: $COMPOSE_CMD logs nginx"
     fi
 }
 
@@ -259,19 +275,21 @@ display_final_info() {
     fi
     echo ""
     print_info "🔧 Management Commands:"
-    echo "   View status: sudo docker-compose ps"
-    echo "   View logs: sudo docker-compose logs -f"
-    echo "   Restart: sudo docker-compose restart"
-    echo "   Stop: sudo docker-compose down"
-    echo "   Update: git pull && sudo docker-compose down && sudo docker-compose up -d --build"
+    echo "   View status: $COMPOSE_CMD ps"
+    echo "   View logs: $COMPOSE_CMD logs -f"
+    echo "   Restart: $COMPOSE_CMD restart"
+    echo "   Stop: $COMPOSE_CMD down"
+    echo "   Update: git pull && $COMPOSE_CMD down && $COMPOSE_CMD up -d --build"
     echo ""
     print_info "📊 Monitoring:"
-    echo "   Resource usage: sudo docker stats"
+    echo "   Resource usage: $DOCKER_CMD stats"
     echo "   System info: htop"
     echo "   Disk usage: df -h"
     echo ""
-    print_warning "Note: If you just installed Docker, you may need to log out and log back in"
-    print_info "Or use 'sudo docker' commands until then"
+    if [[ "$IS_ROOT" == "false" ]]; then
+        print_warning "Note: If you just installed Docker, you may need to log out and log back in"
+        print_info "Or use 'sudo docker' commands until then"
+    fi
     echo ""
 }
 
@@ -282,6 +300,7 @@ main() {
     echo ""
     
     check_ubuntu
+    check_user
     check_project_directory
     install_docker
     configure_firewall

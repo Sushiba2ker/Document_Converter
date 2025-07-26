@@ -37,9 +37,12 @@ print_info() {
 # Check if running as root
 check_root() {
     if [[ $EUID -eq 0 ]]; then
-        print_error "This script should not be run as root"
-        print_info "Please run as a regular user with sudo privileges"
-        exit 1
+        print_warning "Running as root user"
+        print_info "It's recommended to run as a regular user with sudo privileges"
+        print_info "Continuing with root installation..."
+        IS_ROOT=true
+    else
+        IS_ROOT=false
     fi
 }
 
@@ -124,11 +127,15 @@ install_docker() {
 # Configure Docker
 configure_docker() {
     print_step "Configuring Docker"
-    
-    # Add current user to docker group
-    print_info "Adding user to docker group..."
-    sudo usermod -aG docker $USER
-    
+
+    # Add current user to docker group (skip if root)
+    if [[ "$IS_ROOT" == "false" ]]; then
+        print_info "Adding user to docker group..."
+        sudo usermod -aG docker $USER
+    else
+        print_info "Running as root, skipping user group configuration..."
+    fi
+
     # Enable and start Docker service
     print_info "Enabling Docker service..."
     sudo systemctl enable docker
@@ -219,27 +226,39 @@ verify_installation() {
 # Test Docker
 test_docker() {
     print_step "Testing Docker installation"
-    
+
     print_info "Running hello-world container..."
-    if sudo docker run --rm hello-world > /dev/null 2>&1; then
-        print_success "Docker test completed successfully"
+    if [[ "$IS_ROOT" == "true" ]]; then
+        if docker run --rm hello-world > /dev/null 2>&1; then
+            print_success "Docker test completed successfully"
+        else
+            print_warning "Docker test failed, but installation appears correct"
+        fi
     else
-        print_warning "Docker test failed, but installation appears correct"
-        print_info "You may need to log out and log back in for group changes to take effect"
+        if sudo docker run --rm hello-world > /dev/null 2>&1; then
+            print_success "Docker test completed successfully"
+        else
+            print_warning "Docker test failed, but installation appears correct"
+            print_info "You may need to log out and log back in for group changes to take effect"
+        fi
     fi
 }
 
 # Cleanup
 cleanup() {
     print_step "Cleaning up"
-    
+
     # Remove hello-world image
-    sudo docker rmi hello-world 2>/dev/null || true
-    
+    if [[ "$IS_ROOT" == "true" ]]; then
+        docker rmi hello-world 2>/dev/null || true
+    else
+        sudo docker rmi hello-world 2>/dev/null || true
+    fi
+
     # Clean up package cache
     sudo apt-get autoremove -y
     sudo apt-get autoclean
-    
+
     print_success "Cleanup completed"
 }
 
@@ -266,10 +285,16 @@ main() {
     print_step "Installation Complete!"
     echo ""
     print_success "Docker and Docker Compose have been installed successfully"
-    print_warning "IMPORTANT: You need to log out and log back in (or restart) for group changes to take effect"
-    echo ""
-    print_info "After logging back in, you can test Docker with:"
-    echo "  docker run hello-world"
+
+    if [[ "$IS_ROOT" == "false" ]]; then
+        print_warning "IMPORTANT: You need to log out and log back in (or restart) for group changes to take effect"
+        echo ""
+        print_info "After logging back in, you can test Docker with:"
+        echo "  docker run hello-world"
+    else
+        print_info "Running as root, you can immediately use Docker commands:"
+        echo "  docker run hello-world"
+    fi
     echo ""
     print_info "To start using Docker Compose:"
     echo "  docker-compose --version"
