@@ -42,6 +42,7 @@ COPY run.py .
 COPY --from=frontend-builder /app/frontend/.next ./frontend/.next
 COPY --from=frontend-builder /app/frontend/public ./frontend/public
 COPY --from=frontend-builder /app/frontend/package.json ./frontend/package.json
+COPY --from=frontend-builder /app/frontend/package-lock.json ./frontend/package-lock.json
 COPY --from=frontend-builder /app/frontend/next.config.js ./frontend/next.config.js
 
 # Create necessary directories
@@ -53,7 +54,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 
 # Install frontend production dependencies
 WORKDIR /app/frontend
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Back to app directory
 WORKDIR /app
