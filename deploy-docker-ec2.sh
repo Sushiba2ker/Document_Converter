@@ -80,34 +80,11 @@ print_success "Project files uploaded"
 
 # Install Docker and dependencies on EC2
 print_step "Installing Docker and dependencies"
-ssh -i "$SSH_KEY" ubuntu@"$EC2_IP" << 'EOF'
-# Update system
-sudo apt-get update -y
 
-# Install Docker if not already installed
-if ! command -v docker &> /dev/null; then
-    echo "Installing Docker..."
-    sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update -y
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-    sudo usermod -aG docker ubuntu
-    sudo systemctl enable docker
-    sudo systemctl start docker
-else
-    echo "Docker already installed"
-fi
+# Copy and run Docker installation script
+scp -i "$SSH_KEY" install-docker.sh ubuntu@"$EC2_IP":~/
+ssh -i "$SSH_KEY" ubuntu@"$EC2_IP" "chmod +x ~/install-docker.sh && ~/install-docker.sh"
 
-# Install Docker Compose if not already installed
-if ! command -v docker-compose &> /dev/null; then
-    echo "Installing Docker Compose..."
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-else
-    echo "Docker Compose already installed"
-fi
-EOF
 print_success "Docker and dependencies installed"
 
 # Build and deploy application

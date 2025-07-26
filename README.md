@@ -117,8 +117,19 @@ The frontend will be available at `http://localhost:3000`
    - Minimum t3.medium (2 vCPU, 4GB RAM)
    - Security Group: Open ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
 
-2. **Deploy with one command:**
+2. **Option A: One-command deployment (installs Docker + deploys app):**
+
    ```bash
+   ./deploy-docker-ec2.sh YOUR_EC2_IP ~/.ssh/your-key.pem
+   ```
+
+3. **Option B: Two-step deployment (recommended for production):**
+
+   ```bash
+   # Step 1: Setup EC2 with Docker
+   ./setup-ec2-docker.sh YOUR_EC2_IP ~/.ssh/your-key.pem
+
+   # Step 2: Deploy application
    ./deploy-docker-ec2.sh YOUR_EC2_IP ~/.ssh/your-key.pem
    ```
 
@@ -134,6 +145,18 @@ The frontend will be available at `http://localhost:3000`
    - Frontend: `http://localhost`
    - Backend API: `http://localhost:8000`
    - API Documentation: `http://localhost:8000/docs`
+
+#### Manual Docker Installation
+
+If you need to install Docker manually on any Ubuntu system:
+
+```bash
+# Make the script executable
+chmod +x install-docker.sh
+
+# Run the installation
+./install-docker.sh
+```
 
 #### Production URLs (after EC2 deployment)
 
@@ -173,6 +196,12 @@ For production with custom domain:
 4. Update domain name in nginx configuration
 
 ## Docker Management
+
+### Available Scripts
+
+- **`install-docker.sh`** - Installs Docker and Docker Compose on Ubuntu
+- **`setup-ec2-docker.sh`** - Prepares EC2 instance with Docker and security configuration
+- **`deploy-docker-ec2.sh`** - Complete deployment script (includes Docker installation)
 
 ### Common Commands
 
