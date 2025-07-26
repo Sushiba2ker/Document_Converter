@@ -23,12 +23,12 @@
     "postcss": "^8.4.0",
     "lucide-react": "^0.460.0",
     "clsx": "^2.1.0",
-    "class-variance-authority": "^0.7.0"
+    "class-variance-authority": "^0.7.0",
+    "@tailwindcss/typography": "^0.5.15"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
-    "eslint-config-next": "^15.4.1",
-    "@tailwindcss/typography": "^0.5.15"
+    "eslint-config-next": "^15.4.1"
   },
   "engines": {
     "node": ">=18.0.0"
